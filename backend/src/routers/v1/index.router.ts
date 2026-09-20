@@ -1,5 +1,4 @@
 import { Router } from "express";
-import hotelRouter from "./hotel.router.js";
 
 const v1Router = Router();
 
