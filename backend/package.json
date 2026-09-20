@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "NODE_ENV=production node dist/index.js",
     "evaluate": "tsx src/cli/evaluate.ts",
+    "llm:smoke": "tsx src/cli/llm-smoke.ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "clean": "rm -rf dist"
