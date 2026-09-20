@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { LlmClient } from "./client.js";
+import { LlmClient } from "../../../src/pipeline/llm/client.js";
 
 const schema = z.object({ ok: z.boolean() });
 

@@ -10,7 +10,7 @@
     "evaluate": "tsx src/cli/evaluate.ts",
     "llm:smoke": "tsx src/cli/llm-smoke.ts",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
     "clean": "rm -rf dist"
   },
   "dependencies": {
