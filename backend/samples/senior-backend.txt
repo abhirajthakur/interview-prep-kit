@@ -1,0 +1,19 @@
+Senior Backend Engineer
+PostHog-style Analytics Co. - Remote (EU)
+
+We build product analytics software used by thousands of engineering teams, and we are growing our platform group this year. You will own services that ingest and query billions of events.
+
+What you'll do:
+- Design, build and operate the ingestion pipeline and query APIs
+- Mentor junior engineers and review their code
+- Work with product and support to debug customer-facing issues
+
+Requirements:
+- 5+ years of experience building backend services in Python or Node.js
+- Strong understanding of PostgreSQL and data modelling
+- Experience running services in production on Kubernetes
+- Comfortable mentoring junior engineers
+
+Nice to have:
+- Experience with ClickHouse or other columnar databases
+- Open source contributions
