@@ -112,4 +112,10 @@ describe("createSafeFetcher", () => {
       reason: "blocked_host",
     });
   });
+
+  it("truncates instead of failing when asked to", async () => {
+    const res = await fetcher()(`${base}/big`, { maxBytes: 1_000, truncate: true });
+    expect(res).toMatchObject({ ok: true, truncated: true });
+    if (res.ok) expect(res.body).toHaveLength(1_000);
+  });
 });

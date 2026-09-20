@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { readFile } from "node:fs/promises";
+import { roleHints } from "../pipeline/research/role-hints.js";
 import { parseArgs } from "node:util";
 import { loadPipelineConfig } from "../pipeline/config.js";
 import { extractJobDescription } from "../pipeline/extraction/jd-extractor.js";
@@ -33,9 +34,12 @@ async function main() {
   const jd = await readFile(values.jd, "utf8");
 
   const extracted = await timed("requirements extracted", () => extractJobDescription(llm, jd));
-  const crawl = await timed("company site crawled", () => crawlCompany(values.url!, fetcher));
+  const hints = roleHints(extracted.title);
+  const crawl = await timed("company site crawled", () =>
+    crawlCompany(values.url!, fetcher, { roleHints: hints }),
+  );
   const signals = await timed("hiring signals extracted", () =>
-    extractHiringSignals(llm, crawl.pages),
+    extractHiringSignals(llm, crawl.pages, hints),
   );
 
   const company = pickCompanyName({

@@ -3,8 +3,8 @@ import type { JsonLlm } from "../llm/port.js";
 import type { CrawledPage } from "../retrieval/crawler.js";
 import { fenceUntrusted, UNTRUSTED_NOTICE } from "../security/untrusted.js";
 
-const MAX_PAGES = 2;
-const CHARS_PER_PAGE = 2_500;
+const MAX_PAGES = 3;
+const CHARS_PER_PAGE = 2_000;
 const MAX_STAGES = 8;
 
 export type HiringStage = { name: string; description: string };
@@ -56,10 +56,18 @@ const SYSTEM_DESIGN_RE =
 const LIVE_CODING_RE =
   /live cod|pair(?:ed)? programming|\bpairing\b|coding (?:interview|round|exercise|challenge)|whiteboard/i;
 
-function pickHiringPages(pages: readonly CrawledPage[]): CrawledPage[] {
+function pickHiringPages(
+  pages: readonly CrawledPage[],
+  roleHints: readonly string[],
+): CrawledPage[] {
   const score = (p: CrawledPage): number => {
     const haystack = `${p.url} ${p.title}`.toLowerCase();
-    return (/interview/.test(haystack) ? 2 : 0) + (/hir(?:e|ing)/.test(haystack) ? 1 : 0);
+    const roleMatches = roleHints.filter((h) => haystack.includes(h)).length;
+    return (
+      (/interview/.test(haystack) ? 2 : 0) +
+      (/hir(?:e|ing)/.test(haystack) ? 1 : 0) +
+      3 * roleMatches
+    );
   };
 
   return pages
@@ -71,8 +79,9 @@ function pickHiringPages(pages: readonly CrawledPage[]): CrawledPage[] {
 export async function extractHiringSignals(
   llm: JsonLlm,
   pages: readonly CrawledPage[],
+  roleHints: readonly string[] = [],
 ): Promise<HiringSignals> {
-  const selected = pickHiringPages(pages);
+  const selected = pickHiringPages(pages, roleHints);
   if (selected.length === 0) {
     return NO_HIRING_SIGNALS; // nothing to read, so no LLM call
   }

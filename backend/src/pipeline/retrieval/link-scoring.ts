@@ -76,10 +76,19 @@ export type RankOptions = {
   baseUrl: string;
   exclude: ReadonlySet<string>;
   limit: number;
+
   // Only follow links under this path (used for local hosts). "" means no restriction.
   pathPrefix: string;
+
+  // Stems from the job title. Links whose path contains them rank higher (never promotes a score of 0)
+  roleHints?: readonly string[] | undefined;
 };
 export type RankedLink = { link: PageLink; score: number };
+
+function roleBonus(url: URL, hints: readonly string[]): number {
+  const path = normalize(safeDecode(url.pathname));
+  return Math.min(6, 3 * hints.filter((h) => path.includes(h)).length);
+}
 
 export function rankLinks(links: readonly PageLink[], options: RankOptions): RankedLink[] {
   const baseKey = siteKey(new URL(options.baseUrl).hostname);
@@ -100,7 +109,10 @@ export function rankLinks(links: readonly PageLink[], options: RankOptions): Ran
     if (siteKey(u.hostname) !== baseKey) continue;
     if (options.pathPrefix && !u.pathname.startsWith(options.pathPrefix)) continue;
 
-    const score = scoreLink(link);
+    let score = scoreLink(link);
+    if (score > 0 && options.roleHints && options.roleHints.length > 0) {
+      score += roleBonus(u, options.roleHints);
+    }
     if (score > 0) {
       ranked.push({ link, score });
     }

@@ -64,3 +64,27 @@ describe("siteKey", () => {
     expect(siteKey("localhost")).toBe("localhost");
   });
 });
+
+describe("rankLinks with role hints", () => {
+  it("prefers pages that match the role when scores are otherwise equal", () => {
+    const links = [
+      L("https://acme.test/hiring/sales-hiring"),
+      L("https://acme.test/hiring/design-hiring"),
+    ];
+    const plain = rankLinks(links, opts).map((r) => r.link.url);
+    const hinted = rankLinks(links, { ...opts, roleHints: ["design"] }).map((r) => r.link.url);
+    expect(plain[0]).toBe("https://acme.test/hiring/sales-hiring"); // shorter URL wins the tie
+    expect(hinted[0]).toBe("https://acme.test/hiring/design-hiring");
+  });
+
+  it("never promotes an irrelevant page just because it matches the role", () => {
+    const ranked = rankLinks([L("https://acme.test/blog/design-tokens-for-teams-of-any-size")], {
+      ...opts,
+      roleHints: ["design"],
+    });
+    expect(ranked.map((r) => r.score).every((s) => s > 0)).toBe(true);
+    expect(
+      rankLinks([L("https://acme.test/random/design-page")], { ...opts, roleHints: ["design"] }),
+    ).toEqual([]);
+  });
+});

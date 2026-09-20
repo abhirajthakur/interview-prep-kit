@@ -18,32 +18,41 @@ export type FetchFailureReason =
   | "too_many_redirects";
 
 export type FetchResult =
-  | { ok: true; url: string; contentType: string; body: string }
+  | { ok: true; url: string; contentType: string; body: string; truncated?: boolean }
   | { ok: false; url: string; reason: FetchFailureReason; message: string; status: number | null };
 
-export type FetchOptions = { allowedTypes?: readonly string[]; maxBytes?: number };
+export type FetchOptions = {
+  allowedTypes?: readonly string[];
+  maxBytes?: number;
+
+  // Keep the first maxBytes instead of failing when the response is larger
+  truncate?: boolean;
+};
+
 export type Fetcher = (url: string, options?: FetchOptions) => Promise<FetchResult>;
 
 export type SafeFetcherConfig = {
   allowPrivateHosts: boolean;
   timeoutMs?: number;
   maxRetries?: number;
-  /** Minimum gap between requests to the same host. */
-  minHostGapMs?: number;
+  minHostGapMs?: number; // Minimum gap between requests to the same host
   fetchImpl?: typeof fetch;
   sleep?: (ms: number) => Promise<void>;
 };
 
 type Attempt = { result: FetchResult; retryable: boolean };
 
-async function readCapped(res: Response, maxBytes: number): Promise<string | null> {
+async function readCapped(
+  res: Response,
+  maxBytes: number,
+  truncate: boolean,
+): Promise<{ text: string; truncated: boolean } | null> {
   const reader = res.body?.getReader();
-  if (!reader) {
-    return "";
-  }
+  if (!reader) return { text: "", truncated: false };
 
   const chunks: Uint8Array[] = [];
   let total = 0;
+  let truncated = false;
 
   for (;;) {
     const { done, value } = await reader.read();
@@ -51,14 +60,19 @@ async function readCapped(res: Response, maxBytes: number): Promise<string | nul
       break;
     }
 
-    total += value.byteLength;
-    if (total > maxBytes) {
+    if (total + value.byteLength > maxBytes) {
       await reader.cancel().catch(() => undefined);
-      return null;
+      if (!truncate) {
+        return null;
+      }
+      chunks.push(value.subarray(0, maxBytes - total));
+      truncated = true;
+      break;
     }
+    total += value.byteLength;
     chunks.push(value);
   }
-  return Buffer.concat(chunks).toString("utf8");
+  return { text: Buffer.concat(chunks).toString("utf8"), truncated };
 }
 
 function discard(res: Response): void {
@@ -90,6 +104,7 @@ export function createSafeFetcher(config: SafeFetcherConfig): Fetcher {
   const attempt = async (startUrl: string, options: FetchOptions): Promise<Attempt> => {
     const allowedTypes = options.allowedTypes ?? HTML_TYPES;
     const maxBytes = options.maxBytes ?? 1_000_000;
+    const truncate = options.truncate ?? false;
     let current = startUrl;
 
     for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
@@ -165,7 +180,7 @@ export function createSafeFetcher(config: SafeFetcherConfig): Fetcher {
         );
       }
       const declaredBytes = Number(res.headers.get("content-length"));
-      if (Number.isFinite(declaredBytes) && declaredBytes > maxBytes) {
+      if (Number.isFinite(declaredBytes) && declaredBytes > maxBytes && !truncate) {
         discard(res);
         return fail(
           current,
@@ -176,9 +191,9 @@ export function createSafeFetcher(config: SafeFetcherConfig): Fetcher {
         );
       }
 
-      let body: string | null;
+      let read: { text: string; truncated: boolean } | null;
       try {
-        body = await readCapped(res, maxBytes);
+        read = await readCapped(res, maxBytes, truncate);
       } catch (e) {
         return fail(
           current,
@@ -190,7 +205,7 @@ export function createSafeFetcher(config: SafeFetcherConfig): Fetcher {
       }
 
       // readCapped() returns null when the response exceeds the limit
-      if (body === null)
+      if (read === null)
         return fail(
           current,
           "too_large",
@@ -199,7 +214,10 @@ export function createSafeFetcher(config: SafeFetcherConfig): Fetcher {
           false,
         );
 
-      return { result: { ok: true, url: current, contentType, body }, retryable: false };
+      return {
+        result: { ok: true, url: current, contentType, body: read.text, truncated: read.truncated },
+        retryable: false,
+      };
     }
     return fail(current, "too_many_redirects", `More than ${MAX_REDIRECTS} redirects`, null, false);
   };

@@ -1,5 +1,5 @@
 Senior Backend Engineer
-PostHog-style Analytics Co. - Remote (EU)
+PostHog - Remote (EU)
 
 We build product analytics software used by thousands of engineering teams, and we are growing our platform group this year. You will own services that ingest and query billions of events.
 

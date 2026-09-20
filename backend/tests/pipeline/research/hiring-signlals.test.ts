@@ -63,4 +63,30 @@ describe("extractHiringSignals", () => {
     expect(result.found).toBe(false);
     expect(result.stages).toEqual([]);
   });
+
+  it("reads the hiring pages that match the role first", async () => {
+    let prompt = "";
+    const llm: JsonLlm = {
+      completeJson: async (args) => {
+        prompt = args.user;
+        return modelSaysAll as never;
+      },
+    };
+    await extractHiringSignals(
+      llm,
+      [
+        page("https://a.test/hiring/exec-hiring", "hiring", "Exec process."),
+        page("https://a.test/hiring/design-hiring", "hiring", "Design process."),
+        page("https://a.test/hiring/sales-hiring", "hiring", "Sales process."),
+        page(
+          "https://a.test/hiring/engineering-hiring",
+          "hiring",
+          "Engineering process with a take-home.",
+        ),
+      ],
+      ["engine"],
+    );
+    expect(prompt).toContain("engineering-hiring");
+    expect(prompt).not.toContain("sales-hiring");
+  });
 });

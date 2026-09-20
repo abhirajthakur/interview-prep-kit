@@ -88,4 +88,27 @@ describe("crawlCompany", () => {
     expect(invalid.reachable).toBe(false);
     expect(invalid.skipped[0]?.reason).toBe("Not a valid URL");
   });
+
+  it("still finds a hiring page buried deep in a large sitemap", async () => {
+    const filler = Array.from(
+      { length: 1_200 },
+      (_, i) => `<url><loc>https://acme.test/blog/post-${i}</loc></url>`,
+    ).join("");
+    const result = await crawlCompany(
+      "https://acme.test/",
+      fakeFetcher({
+        "https://acme.test/robots.txt":
+          "User-agent: *\nDisallow:\nSitemap: https://acme.test/sitemap.xml\n",
+        "https://acme.test/sitemap.xml": `<?xml version="1.0"?><urlset>${filler}<url><loc>https://acme.test/handbook/hiring/interviewing</loc></url></urlset>`,
+        "https://acme.test/": html("Acme", "<p>Hello.</p>"),
+        "https://acme.test/handbook/hiring/interviewing": html(
+          "Interviewing",
+          "<p>Four rounds.</p>",
+        ),
+      }),
+    );
+    expect(result.pages.map((p) => p.url)).toContain(
+      "https://acme.test/handbook/hiring/interviewing",
+    );
+  });
 });

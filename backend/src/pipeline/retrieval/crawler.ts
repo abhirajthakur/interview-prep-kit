@@ -18,7 +18,11 @@ export type CrawlResult = {
   hiringPageFound: boolean;
 };
 
-export type CrawlOptions = { maxPages?: number; maxDepth?: number };
+export type CrawlOptions = {
+  maxPages?: number;
+  maxDepth?: number;
+  roleHints?: readonly string[] | undefined;
+};
 
 const HIRING_HINT = /interview|\bhir(e|ing)\b|recruit|\bcareers?\b|\bjobs?\b|\bjoin\b/;
 const ABOUT_HINT = /about|company|team|mission|culture|values|handbook|people/;
@@ -91,7 +95,7 @@ export async function crawlCompany(
       return null;
     }
 
-    const res = await fetcher(url);
+    const res = await fetcher(url, { truncate: true, maxBytes: 3_000_000 });
     if (!res.ok) {
       skipped.push({ url, reason: res.message });
       return null;
@@ -129,6 +133,7 @@ export async function crawlCompany(
       exclude: visited,
       limit: LINKS_PER_DEPTH[depth - 1] ?? 3,
       pathPrefix,
+      roleHints: options.roleHints,
     });
 
     const fetched: CrawledPage[] = [];
