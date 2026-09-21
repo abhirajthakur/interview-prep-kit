@@ -32,7 +32,7 @@ function make(responses: (Response | Error)[]) {
     sleep: async (ms) => void sleeps.push(ms),
   });
   const call = () => client.completeJson({ system: "s", user: "u", schema, schemaName: "t" });
-  return { call, bodies, sleeps };
+  return { call, bodies, sleeps, client };
 }
 
 describe("LlmClient", () => {
@@ -84,5 +84,18 @@ describe("LlmClient", () => {
     const { call, bodies } = make([new TypeError("fetch failed"), completion('{"ok":true}')]);
     await call();
     expect(bodies).toHaveLength(2);
+  });
+
+  it("adds up the token usage the provider reports", async () => {
+    const withUsage = new Response(
+      JSON.stringify({
+        choices: [{ message: { content: '{"ok":true}' }, finish_reason: "stop" }],
+        usage: { prompt_tokens: 40, completion_tokens: 10, total_tokens: 50 },
+      }),
+      { status: 200 },
+    );
+    const { call, client } = make([withUsage]);
+    await call();
+    expect(client.tokensUsed).toBe(50);
   });
 });

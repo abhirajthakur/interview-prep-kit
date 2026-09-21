@@ -122,8 +122,13 @@ export class LlmClient {
 
       const data = (await res.json()) as {
         choices?: { message?: { content?: string | null }; finish_reason?: string | null }[];
-        usage?: { total_tokens?: number };
+        usage?: { total_tokens?: number; prompt_tokens?: number; completion_tokens?: number };
       };
+
+      const usage = data.usage;
+      this.tokensUsed +=
+        usage?.total_tokens ?? (usage?.prompt_tokens ?? 0) + (usage?.completion_tokens ?? 0);
+
       const content = data.choices?.[0]?.message?.content ?? "";
       const truncated = data.choices?.[0]?.finish_reason === "length";
 
