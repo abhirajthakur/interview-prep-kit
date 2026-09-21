@@ -93,9 +93,9 @@ describe("kitSchema", () => {
   });
 
   it("rejects non-integer minutes and out-of-range difficulty", () => {
-    rejects((k) => void (k.schedule.days[0]!.minutes = 1.5), /integer/i);
-    rejects((k) => void (k.questions[0]!.difficulty = 4), /<=3|too big/i);
-    rejects((k) => void (k.questions[0]!.difficulty = 0), />=1|too small/i);
+    rejects((k) => void (k.schedule.days[0]!.minutes = 1.5), /\bint/i);
+    rejects((k) => void (k.questions[0]!.difficulty = 4), /<=\s*3|too big|at most/i);
+    rejects((k) => void (k.questions[0]!.difficulty = 0), />=\s*1|too small|at least/i);
   });
 
   it("rejects values outside the allowed enums", () => {
