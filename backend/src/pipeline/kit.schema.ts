@@ -48,6 +48,15 @@ export const scheduleDaySchema = z.object({
   minutes: z.number().int().nonnegative(),
 });
 
+const DEFAULT_RESEARCH = {
+  skipped_sources: [],
+  hiring_page_found: false,
+  public_discussion_found: false,
+  jd_thin: false,
+  hiring_process: { found: false, stages: [], sources: [] },
+  discussion: [],
+};
+
 export const kitSchema = z
   .object({
     source: z.object({
@@ -89,13 +98,14 @@ export const kitSchema = z
         hiring_page_found: z.boolean(),
         public_discussion_found: z.boolean(),
         jd_thin: z.boolean(),
+        hiring_process: z.object({
+          found: z.boolean(),
+          stages: z.array(z.object({ name: z.string(), description: z.string() })),
+          sources: z.array(z.string()),
+        }),
+        discussion: z.array(z.object({ url: z.string(), title: z.string(), text: z.string() })),
       })
-      .default({
-        skipped_sources: [],
-        hiring_page_found: false,
-        public_discussion_found: false,
-        jd_thin: false,
-      }),
+      .default(DEFAULT_RESEARCH),
   })
   .superRefine((kit, ctx) => {
     const issue = (message: string, path: (string | number)[]) =>
