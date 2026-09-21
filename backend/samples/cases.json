@@ -1,0 +1,56 @@
+[
+  {
+    "id": "stripe-staff-backend",
+    "jd": "Staff Backend Engineer\nStripe - Remote\n\nStripe builds financial infrastructure for businesses. You will lead the design and operation of highly reliable backend systems handling large-scale payments.\n\nWhat you'll do:\n- Design distributed backend systems and APIs at high scale\n- Lead technical decisions across multiple engineering teams\n- Improve reliability, observability, and performance of production services\n- Mentor senior and junior engineers\n\nRequirements:\n- 8+ years of backend engineering experience\n- Strong experience with Go, Java, or Ruby\n- Deep understanding of distributed systems and databases\n- Experience designing highly available production services\n- Strong technical leadership and mentoring skills\n\nNice to have:\n- Experience with event-driven architectures\n- Experience with Kafka\n- Payments or financial systems experience",
+    "company_url": "https://stripe.com",
+    "days": 14
+  },
+  {
+    "id": "shopify-senior-frontend",
+    "jd": "Senior Frontend Developer\nShopify - Remote\n\nWe build tools that help millions of merchants run their businesses online. You will work on web experiences used by merchants around the world.\n\nWhat you'll do:\n- Build and maintain complex React applications\n- Improve frontend performance and accessibility\n- Collaborate with designers and product managers\n- Review code and mentor other developers\n\nRequirements:\n- 5+ years of frontend development experience\n- Strong JavaScript and TypeScript skills\n- Deep experience with React\n- Understanding of browser performance and accessibility\n- Experience working closely with product and design teams\n\nNice to have:\n- GraphQL experience\n- Experience with design systems",
+    "company_url": "https://www.shopify.com",
+    "days": 10
+  },
+  {
+    "id": "airbnb-product-engineer",
+    "jd": "Senior Software Engineer, Product\nAirbnb - San Francisco / Remote\n\nYou will build product experiences that help guests discover and book unique places to stay.\n\nWhat you'll do:\n- Build customer-facing product features\n- Work across frontend and backend systems\n- Partner with product managers and designers\n- Investigate production issues and improve system reliability\n\nRequirements:\n- 5+ years of software engineering experience\n- Strong experience with Python or Java\n- Experience building APIs and web applications\n- Strong debugging and problem-solving skills\n- Excellent collaboration and communication skills\n\nNice to have:\n- Experience with experimentation platforms\n- Experience working on marketplace products",
+    "company_url": "https://www.airbnb.com",
+    "days": 7
+  },
+  {
+    "id": "datadog-platform-engineer",
+    "jd": "Senior Platform Engineer\nDatadog - Remote\n\nDatadog provides monitoring and observability tools for engineering teams. You will help build infrastructure that operates reliably at significant scale.\n\nWhat you'll do:\n- Build and operate internal platform services\n- Improve deployment and infrastructure tooling\n- Debug production incidents\n- Design systems for reliability and scalability\n- Mentor engineers and participate in technical reviews\n\nRequirements:\n- 5+ years of software engineering experience\n- Strong Linux and networking fundamentals\n- Experience with Kubernetes and Docker\n- Experience operating production systems\n- Strong programming skills in Go or Python\n\nNice to have:\n- Terraform experience\n- Prometheus or OpenTelemetry experience\n- Experience designing developer platforms",
+    "company_url": "https://www.datadoghq.com",
+    "days": 12
+  },
+  {
+    "id": "figma-midlevel-fullstack",
+    "jd": "Software Engineer, Full Stack\nFigma - Remote\n\nYou will work on collaborative product features used by distributed teams. The role involves close collaboration between engineering, product, and design.\n\nRequirements:\n- 3+ years of software engineering experience\n- Experience with TypeScript and React\n- Experience building backend APIs\n- Understanding of relational databases\n- Strong communication and collaboration skills\n\nNice to have:\n- Real-time collaboration experience\n- WebSocket experience\n- Experience with design tools",
+    "company_url": "https://www.figma.com",
+    "days": 8
+  },
+  {
+    "id": "early-stage-backend",
+    "jd": "Backend Engineer\nEarly-stage SaaS Startup\n\nWe are looking for an engineer to help build the backend of our first product.\n\nRequirements:\n- 2+ years of Node.js experience\n- Experience building REST APIs\n- Basic PostgreSQL experience\n- Comfortable working in a small team\n\nNice to have:\n- AWS experience",
+    "company_url": "https://example.com",
+    "days": 5
+  },
+  {
+    "id": "thin-jd",
+    "jd": "Backend developer wanted.\nMust know Node.js and PostgreSQL.",
+    "company_url": "https://example.com",
+    "days": 3
+  },
+  {
+    "id": "invalid-days",
+    "jd": "Senior Backend Engineer\n\nRequirements:\n- Python\n- PostgreSQL\n- AWS",
+    "company_url": "https://example.com",
+    "days": 0
+  },
+  {
+    "id": "missing-company-info",
+    "jd": "Senior Software Engineer\n\nWe are looking for an experienced engineer to join our platform team.\n\nRequirements:\n- 5+ years of software engineering experience\n- Strong Python skills\n- Experience with distributed systems\n- Experience operating production services\n- Strong communication skills",
+    "company_url": "",
+    "days": 7
+  }
+]
