@@ -111,4 +111,26 @@ describe("crawlCompany", () => {
       "https://acme.test/handbook/hiring/interviewing",
     );
   });
+
+  it("only follows role-relevant links deeper in once a hiring page is found", async () => {
+    const result = await crawlCompany(
+      "https://acme.test/",
+      fakeFetcher({
+        "https://acme.test/": html("Acme", '<a href="/careers">Careers</a>'),
+        "https://acme.test/careers": html(
+          "Careers",
+          '<a href="/careers/engineering-hiring">Eng</a><a href="/careers/sales-hiring">Sales</a>',
+        ),
+        "https://acme.test/careers/engineering-hiring": html(
+          "Engineering hiring",
+          "<p>Take-home.</p>",
+        ),
+        "https://acme.test/careers/sales-hiring": html("Sales hiring", "<p>Quota.</p>"),
+      }),
+      { roleHints: ["engine"] },
+    );
+    const urls = result.pages.map((p) => p.url);
+    expect(urls).toContain("https://acme.test/careers/engineering-hiring");
+    expect(urls).not.toContain("https://acme.test/careers/sales-hiring");
+  });
 });

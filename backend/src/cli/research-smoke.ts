@@ -52,6 +52,8 @@ async function main() {
     searchPublicDiscussion(company, fetcher),
   );
 
+  console.error(`tokens used by this run: ${llm.tokensUsed}`);
+
   console.log(
     JSON.stringify(
       {

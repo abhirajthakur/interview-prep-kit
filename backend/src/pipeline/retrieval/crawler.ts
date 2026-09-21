@@ -134,6 +134,9 @@ export async function crawlCompany(
       limit: LINKS_PER_DEPTH[depth - 1] ?? 3,
       pathPrefix,
       roleHints: options.roleHints,
+
+      // After the first level, only follow pages that match the role once a hiring page has been found
+      requireRoleMatch: depth > 1 && pages.some((p) => p.kind === "hiring"),
     });
 
     const fetched: CrawledPage[] = [];

@@ -34,10 +34,14 @@ function stripFences(text: string): string {
 }
 
 export class LlmClient {
+  // Tokens the provider reported for successful calls. Lets us budget against free-tier limits
+  tokensUsed = 0;
+
   private readonly fetchImpl: typeof fetch;
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly logger: Logger;
   private readonly maxAttempts: number;
+
   /** After any 429, every caller waits until this time (safe if calls ever run in parallel). */
   private pausedUntil = 0;
 
@@ -118,6 +122,7 @@ export class LlmClient {
 
       const data = (await res.json()) as {
         choices?: { message?: { content?: string | null }; finish_reason?: string | null }[];
+        usage?: { total_tokens?: number };
       };
       const content = data.choices?.[0]?.message?.content ?? "";
       const truncated = data.choices?.[0]?.finish_reason === "length";

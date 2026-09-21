@@ -24,6 +24,7 @@ const PENALTIES: Signal[] = [
 ];
 
 const normalize = (s: string): string => s.toLowerCase().replace(/[_\s]+/g, "-");
+
 const safeDecode = (s: string): string => {
   try {
     return decodeURIComponent(s);
@@ -82,7 +83,11 @@ export type RankOptions = {
 
   // Stems from the job title. Links whose path contains them rank higher (never promotes a score of 0)
   roleHints?: readonly string[] | undefined;
+
+  // Skip links whose path does not match any role hint. */
+  requireRoleMatch?: boolean | undefined;
 };
+
 export type RankedLink = { link: PageLink; score: number };
 
 function roleBonus(url: URL, hints: readonly string[]): number {
@@ -108,6 +113,9 @@ export function rankLinks(links: readonly PageLink[], options: RankOptions): Ran
 
     if (siteKey(u.hostname) !== baseKey) continue;
     if (options.pathPrefix && !u.pathname.startsWith(options.pathPrefix)) continue;
+
+    const hints = options.roleHints ?? [];
+    if (options.requireRoleMatch && hints.length > 0 && roleBonus(u, hints) === 0) continue;
 
     let score = scoreLink(link);
     if (score > 0 && options.roleHints && options.roleHints.length > 0) {
