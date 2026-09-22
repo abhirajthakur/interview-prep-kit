@@ -7,7 +7,7 @@ import { normalizeForMatch, wordCount } from "../text/normalize.js";
 const MAX_JD_CHARS = 6_000;
 const MAX_REQUIREMENTS = 20;
 const MAX_RESPONSIBILITIES = 8;
-const THIN_WORD_LIMIT = 50;
+const THIN_WORD_LIMIT = 25;
 const THIN_REQUIREMENT_LIMIT = 3;
 const MIN_EVIDENCE_CHARS = 6;
 

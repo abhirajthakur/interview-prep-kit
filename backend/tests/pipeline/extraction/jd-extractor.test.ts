@@ -140,4 +140,30 @@ describe("extractJobDescription", () => {
     expect(calls).toBe(0);
     expect(result.thin).toBe(true);
   });
+
+  it("does not call a short but well-structured posting thin", async () => {
+    const jd = `Backend Engineer
+Early-stage SaaS Startup
+
+We are looking for an engineer to help build the backend of our first product.
+
+Requirements:
+- 2+ years of Node.js experience
+- Experience building REST APIs
+- Basic PostgreSQL experience
+- Comfortable working in a small team
+
+Nice to have:
+- AWS experience`;
+    const result = await extractJobDescription(
+      stub([
+        req("2+ years Node.js", "2+ years of Node.js experience"),
+        req("REST APIs", "Experience building REST APIs"),
+        req("PostgreSQL", "Basic PostgreSQL experience"),
+      ]),
+      jd,
+    );
+    expect(result.thin).toBe(false);
+    expect(result.warnings).toEqual([]);
+  });
 });
