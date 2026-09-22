@@ -197,7 +197,7 @@ describe("regenerateFlashcards", () => {
   it("makes no call and returns only kept cards when everything is already covered", async () => {
     let calls = 0;
     const llm: JsonLlm = { completeJson: async () => (calls++, { flashcards: [] } as never) };
-    const kept = F("f1", ["r1"]);
+    const kept = F("f1", ["r1"], { pinned: true });
     const result = await regenerateFlashcards(llm, {
       requirements: [R("r1")],
       currentFlashcards: [kept],
