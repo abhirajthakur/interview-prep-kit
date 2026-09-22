@@ -1,35 +1,32 @@
 import type { NextFunction, Request, Response } from "express";
 import type { ZodType } from "zod";
+import { badRequest } from "../utils/api-error.js";
 
-type RequestPart = "body" | "query" | "params";
-
-export const validate = (schema: ZodType, part: RequestPart = "body") => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req[part]);
-
+// Schema shaped as { body?, params?, query? }. Reassigns req.body/params/query with the parsed values
+export const validate =
+  (schema: ZodType) =>
+  (req: Request, _res: Response, next: NextFunction): void => {
+    const result = schema.safeParse({ body: req.body, params: req.params, query: req.query });
     if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        details: result.error.issues,
-      });
+      next(
+        badRequest(
+          "Invalid request",
+          result.error.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
+        ),
+      );
+      return;
     }
 
-    const parsed = result.data;
-
-    if (part === "query") {
-      Object.defineProperty(req, "query", {
-        value: parsed,
-        writable: true,
-        enumerable: true,
-        configurable: true,
-      });
-    } else if (part === "body") {
-      req.body = parsed;
-    } else {
-      req.params = parsed as typeof req.params;
+    const parsed = result.data as { body?: unknown; params?: unknown; query?: unknown };
+    if (parsed.body !== undefined) {
+      req.body = parsed.body;
+    }
+    if (parsed.params !== undefined) {
+      req.params = parsed.params as typeof req.params;
+    }
+    if (parsed.query !== undefined) {
+      req.query = parsed.query as typeof req.query;
     }
 
     next();
   };
-};
