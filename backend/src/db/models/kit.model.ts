@@ -59,6 +59,12 @@ const kitSchema = new Schema(
     dedupeKey: { type: String, required: true, index: true },
     /** Bumped on every save. A regeneration that started against a stale version is rejected. */
     version: { type: Number, default: 0 },
+    /** The raw request, kept because generation runs in the background after the response is sent. */
+    input: {
+      jd: { type: String, required: true },
+      company_url: { type: String, required: true },
+      days: { type: Number, required: true },
+    },
 
     source: {
       company: String,
