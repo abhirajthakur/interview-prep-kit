@@ -173,4 +173,15 @@ describe("pickCompanyName", () => {
   it("returns an empty name for an unparseable URL", () => {
     expect(pickCompanyName({ fromJd: "", homeTitle: "", url: "http://" })).toBe("");
   });
+
+  it("does not guess a name from placeholder or reserved domains", () => {
+    expect(pickCompanyName({ fromJd: "", homeTitle: "", url: "https://example.com" })).toBe("");
+    expect(pickCompanyName({ fromJd: "", homeTitle: "", url: "https://acme.test" })).toBe("");
+    expect(
+      pickCompanyName({ fromJd: "", homeTitle: "", url: "https://no-such-company.invalid" }),
+    ).toBe("");
+    expect(pickCompanyName({ fromJd: "Acme", homeTitle: "", url: "https://example.com" })).toBe(
+      "Acme",
+    );
+  });
 });
