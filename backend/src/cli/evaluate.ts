@@ -19,8 +19,8 @@ function fail(message: string): never {
 }
 
 async function main(): Promise<void> {
-  loadDotenv({ path: path.resolve(invocationDir, ".env") }); // repo root .env, if any
-  loadDotenv(); // backend/.env
+  loadDotenv({ path: path.resolve(invocationDir, ".env"), quiet: true }); // repo root .env, if any
+  loadDotenv({ quiet: true }); // backend/.env
 
   const { values } = parseArgs({
     options: { input: { type: "string" }, output: { type: "string" } },
