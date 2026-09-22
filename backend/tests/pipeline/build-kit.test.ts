@@ -289,4 +289,35 @@ describe("buildKit", () => {
     );
     expect(kit.schedule.days).toHaveLength(60);
   });
+
+  it("says so when a careers page exists but does not describe the interview process", async () => {
+    const { llm } = makeLlm({
+      hiring_signals: {
+        describes_interview_process: false,
+        stages: [],
+        take_home: false,
+        system_design: false,
+        live_coding: false,
+        culture_notes: [],
+      },
+    });
+    const kit = await buildKit(
+      { jd: JD, companyUrl: "https://acme.test", days: 3 },
+      { llm, fetcher: site },
+    );
+    expect(kit.research.hiring_page_found).toBe(true);
+    expect(kit.research.hiring_process.found).toBe(false);
+    expect(kit.warnings.join(" ")).toMatch(/does not describe how the company interviews/);
+  });
+
+  it("says plainly that no website was given instead of calling the URL invalid", async () => {
+    const { llm } = makeLlm();
+    const kit = await buildKit(
+      { jd: JD, companyUrl: "  ", days: 3 },
+      { llm, fetcher: makeFetcher({}) },
+    );
+    expect(kit.warnings.join(" ")).toMatch(/No company website was provided/);
+    expect(kit.warnings.join(" ")).not.toMatch(/Not a valid URL/);
+    expect(kit.research.skipped_sources).toEqual([]);
+  });
 });

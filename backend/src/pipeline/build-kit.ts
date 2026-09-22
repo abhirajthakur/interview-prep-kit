@@ -11,7 +11,7 @@ import { pickCompanyName } from "./research/company-name.js";
 import { searchPublicDiscussion, type DiscussionResult } from "./research/discussion.js";
 import { extractHiringSignals, NO_HIRING_SIGNALS } from "./research/hiring-signals.js";
 import { roleHints } from "./research/role-hints.js";
-import { crawlCompany } from "./retrieval/crawler.js";
+import { crawlCompany, CrawlResult } from "./retrieval/crawler.js";
 import type { Fetcher } from "./retrieval/safe-fetch.js";
 import { buildSchedule } from "./scheduling/schedule.js";
 
@@ -96,13 +96,19 @@ export async function buildKit(input: BuildKitInput, deps: PipelineDeps): Promis
   const extracted = await step("extract_requirements", () => extractJobDescription(llm, input.jd));
   const hints = roleHints(extracted.title);
 
-  // 2. The company site.
-  const crawl = await step("crawl_site", () =>
-    crawlCompany(input.companyUrl, fetcher, { roleHints: hints }),
-  );
+  // 2. The company site (skipped when none was given).
+  const hasCompanyUrl = input.companyUrl.trim() !== "";
+  const crawl: CrawlResult = hasCompanyUrl
+    ? await step("crawl_site", () => crawlCompany(input.companyUrl, fetcher, { roleHints: hints }))
+    : { reachable: false, startUrl: "", pages: [], skipped: [], hiringPageFound: false };
 
   const skippedSources = [...crawl.skipped];
-  if (!crawl.reachable) {
+  if (!hasCompanyUrl) {
+    emit("crawl_site", "skipped", "no company website was given");
+    warnings.push(
+      "No company website was provided, so this kit is based on the job description only.",
+    );
+  } else if (!crawl.reachable) {
     const reason = crawl.skipped[0]?.reason;
     warnings.push(
       `The company website could not be retrieved${reason ? ` (${reason})` : ""}. This kit is based on the job description only.`,
@@ -114,12 +120,20 @@ export async function buildKit(input: BuildKitInput, deps: PipelineDeps): Promis
   }
 
   // 3. How the company hires (skipped without an LLM call when no hiring page was found).
+  const warningsBeforeSignals = warnings.length;
   const signals = await optional(
     "hiring_process",
     "The hiring-process summary",
     NO_HIRING_SIGNALS,
     () => extractHiringSignals(llm, crawl.pages, hints),
   );
+
+  // Only when the step ran and read the pages (a failure already added its own warning).
+  if (crawl.hiringPageFound && !signals.found && warnings.length === warningsBeforeSignals) {
+    warnings.push(
+      "A careers or hiring page was found, but it does not describe how the company interviews, so the questions follow the role rather than the company's own process.",
+    );
+  }
 
   // 4. What candidates say publicly.
   const companyName = pickCompanyName({
@@ -227,7 +241,11 @@ export async function buildKit(input: BuildKitInput, deps: PipelineDeps): Promis
     questions: draft.questions,
     flashcards,
     schedule,
-    coverage: { uncovered_requirement_ids: draft.uncoveredIds, passes: draft.passes },
+    coverage: {
+      uncovered_requirement_ids: draft.uncoveredIds,
+      passes: draft.passes,
+      history: draft.history,
+    },
     warnings: [...extracted.warnings, ...warnings],
     research: {
       skipped_sources: skippedSources,
@@ -248,7 +266,7 @@ export async function buildKit(input: BuildKitInput, deps: PipelineDeps): Promis
     throw new PipelineError(`The generated kit failed validation: ${issues}`, "KIT_INVALID");
   }
 
-  // Check that every must-have requirement is not only covered by a question, 
+  // Check that every must-have requirement is not only covered by a question,
   // but that its question is also scheduled for study
   const unscheduled = mustNotScheduled(
     parsed.data.role.requirements,
