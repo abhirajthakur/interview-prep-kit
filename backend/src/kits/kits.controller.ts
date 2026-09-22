@@ -20,20 +20,17 @@ export async function create(req: Request, res: Response) {
     companyUrl: company_url,
     days,
   });
-  sendSuccess(res, started ? 202 : 200, {
-    success: true,
-    data: { id: kit.id, status: kit.status },
-  });
+  sendSuccess(res, started ? 202 : 200, { id: kit.id, status: kit.status });
 }
 
 export async function list(req: Request, res: Response) {
   const kits = await listKits(ownerId(req));
-  sendSuccess(res, 200, { success: true, data: kits });
+  sendSuccess(res, 200, kits);
 }
 
 export async function get(req: Request, res: Response) {
   const kit = await getKit(req.params["id"] as string, ownerId(req));
-  sendSuccess(res, 200, { success: true, data: kit });
+  sendSuccess(res, 200, kit);
 }
 
 export async function regenerate(req: Request, res: Response) {
@@ -49,5 +46,5 @@ export async function regenerate(req: Request, res: Response) {
     expectedVersion: version,
     days,
   });
-  sendSuccess(res, 200, { success: true, data: kit });
+  sendSuccess(res, 200, kit);
 }

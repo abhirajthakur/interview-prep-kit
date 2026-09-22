@@ -14,23 +14,23 @@ export async function register(req: Request, res: Response) {
   const { email, password } = req.body as { email: string; password: string };
   const { user, session } = await authService.register(email, password);
   setSessionCookie(res, session.raw);
-  sendSuccess(res, 201, { success: true, data: { user } });
+  sendSuccess(res, 201, { user });
 }
 
 export async function login(req: Request, res: Response) {
   const { email, password } = req.body as { email: string; password: string };
   const { user, session } = await authService.login(email, password);
   setSessionCookie(res, session.raw);
-  sendSuccess(res, 200, { success: true, data: { user } });
+  sendSuccess(res, 200, { user });
 }
 
 export async function logout(req: Request, res: Response) {
   const raw = req.cookies?.[SESSION_COOKIE_NAME] as string | undefined;
   if (raw) await authService.logout(raw);
   res.clearCookie(SESSION_COOKIE_NAME, { path: "/" });
-  sendSuccess(res, 200, { success: true, data: null });
+  sendSuccess(res, 200, null);
 }
 
 export function me(req: Request, res: Response) {
-  sendSuccess(res, 200, { success: true, data: { user: req.user } });
+  sendSuccess(res, 200, { user: req.user });
 }
