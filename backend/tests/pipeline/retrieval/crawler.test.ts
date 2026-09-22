@@ -133,4 +133,21 @@ describe("crawlCompany", () => {
     expect(urls).toContain("https://acme.test/careers/engineering-hiring");
     expect(urls).not.toContain("https://acme.test/careers/sales-hiring");
   });
+
+  it("stays inside the company's own path on a local host, even without a trailing slash", async () => {
+    const result = await crawlCompany(
+      "http://localhost:8099/acme",
+      fakeFetcher({
+        "http://localhost:8099/acme": html(
+          "Acme",
+          '<p>Hello.</p><a href="/acme/careers">Careers</a><a href="/other/careers">Other</a>',
+        ),
+        "http://localhost:8099/acme/careers": html("Careers", "<p>Roles.</p>"),
+        "http://localhost:8099/other/careers": html("Other careers", "<p>The wrong company.</p>"),
+      }),
+    );
+    const urls = result.pages.map((p) => p.url);
+    expect(urls).toContain("http://localhost:8099/acme/careers");
+    expect(urls).not.toContain("http://localhost:8099/other/careers");
+  });
 });

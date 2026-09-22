@@ -38,6 +38,14 @@ function classify(page: CleanPage, isHome: boolean): PageKind {
   return "other";
 }
 
+// "/acme", "/acme/" and "/acme/index.html" all scope to "/acme/"
+function scopePrefix(pathname: string): string {
+  const last = pathname.split("/").pop() ?? "";
+  return pathname.endsWith("/") || last.includes(".")
+    ? pathname.replace(/[^/]*$/, "")
+    : `${pathname}/`;
+}
+
 /**
  * Homepage -> rank its links (plus sitemap URLs) -> fetch the best few ->
  * follow links found on hiring pages one level deeper. Nothing here throws:
@@ -123,7 +131,7 @@ export async function crawlCompany(
   const sitemapLinks = await loadSitemapLinks(sitemapUrls, fetcher);
 
   // If several companies are served from one local server (/acme/, /other/), stay inside this one.
-  const pathPrefix = isLocalHost(start.hostname) ? start.pathname.replace(/[^/]*$/, "") : "";
+  const pathPrefix = isLocalHost(start.hostname) ? scopePrefix(new URL(home.url).pathname) : "";
 
   // URLs we currently have available to consider crawling
   let frontier: PageLink[] = [...home.links, ...sitemapLinks];
