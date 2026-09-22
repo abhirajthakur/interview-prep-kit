@@ -88,6 +88,15 @@ export const kitSchema = z
     coverage: z.object({
       uncovered_requirement_ids: z.array(z.string()),
       passes: z.number().int().min(0),
+      // Extension: what was still uncovered after each pass, so a closed gap is visible.
+      history: z
+        .array(
+          z.object({
+            pass: z.number().int().min(1),
+            uncovered_requirement_ids: z.array(z.string()),
+          }),
+        )
+        .default([]),
     }),
 
     // Extensions: honest reporting of what could not be found.

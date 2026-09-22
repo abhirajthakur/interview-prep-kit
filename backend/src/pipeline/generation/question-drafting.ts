@@ -26,6 +26,10 @@ export type DraftInput = {
 export type DraftResult = {
   questions: Question[];
   passes: number;
+
+  // Requirement ids still uncovered after each pass (before any template fallback)
+  history: { pass: number; uncovered_requirement_ids: string[] }[];
+
   uncoveredIds: string[];
   fallbackRequirementIds: string[];
   warnings: string[];
@@ -117,8 +121,15 @@ export async function draftQuestions(llm: JsonLlm, input: DraftInput): Promise<D
     thin: input.thin,
     signalsMentionDesign: context.signals.systemDesign,
   });
-  for (const plan of plans) await generate(plan.category, plan.requirements, false);
+
+  for (const plan of plans) {
+    await generate(plan.category, plan.requirements, false);
+  }
+
   let passes = 1;
+  const history: DraftResult["history"] = [
+    { pass: 1, uncovered_requirement_ids: findUncovered(requirements, questions) },
+  ];
 
   // Passes 2..MAX_PASSES: target only the requirements that still have no question.
   let previousGaps: string[] | null = null;
@@ -134,6 +145,10 @@ export async function draftQuestions(llm: JsonLlm, input: DraftInput): Promise<D
     if (technical.length > 0) await generate("technical", technical, true);
     if (behavioural.length > 0) await generate("behavioural", behavioural, true);
     passes++;
+    history.push({
+      pass: passes,
+      uncovered_requirement_ids: findUncovered(requirements, questions),
+    });
   }
 
   // Guarantee: no must-have ships uncovered.
@@ -155,5 +170,5 @@ export async function draftQuestions(llm: JsonLlm, input: DraftInput): Promise<D
     );
   }
 
-  return { questions, passes, uncoveredIds, fallbackRequirementIds: mustGaps, warnings };
+  return { questions, passes, history, uncoveredIds, fallbackRequirementIds: mustGaps, warnings };
 }

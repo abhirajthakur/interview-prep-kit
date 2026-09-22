@@ -81,6 +81,10 @@ describe("draftQuestions", () => {
     const { llm } = scripted({ skipFirstTechnical: ["r2"] });
     const result = await draftQuestions(llm, { requirements, context, thin: false });
     expect(result.passes).toBe(2);
+    expect(result.history).toEqual([
+      { pass: 1, uncovered_requirement_ids: ["r2"] },
+      { pass: 2, uncovered_requirement_ids: [] },
+    ]);
     expect(result.uncoveredIds).toEqual([]);
     expect(result.fallbackRequirementIds).toEqual([]);
     expect(result.questions.some((q) => q.requirement_ids.includes("r2"))).toBe(true);
@@ -90,6 +94,11 @@ describe("draftQuestions", () => {
     const { llm } = scripted({ skipFirstTechnical: ["r2"], skipAlways: ["r3"] });
     const result = await draftQuestions(llm, { requirements, context, thin: false });
     expect(result.passes).toBe(3);
+    expect(result.history.map((h) => h.uncovered_requirement_ids)).toEqual([
+      ["r2", "r3"],
+      ["r3"],
+      ["r3"],
+    ]);
     expect(result.fallbackRequirementIds).toEqual(["r3"]);
     expect(result.uncoveredIds).toEqual([]);
     expect(result.warnings.join(" ")).toMatch(/template questions/);
