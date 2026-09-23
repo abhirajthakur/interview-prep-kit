@@ -2,10 +2,12 @@
   "name": "interview-prep-kit",
   "private": true,
   "workspaces": [
-    "backend"
+    "backend",
+    "frontend"
   ],
   "scripts": {
     "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
     "test": "npm run test -w backend",
     "evaluate": "npm run evaluate -w backend --"
   }
