@@ -9,8 +9,13 @@ export async function connectDb() {
     });
 
     logger.info("MongoDB connected");
-  } catch {
-    throw new Error("Not able to connect to DB.");
+  } catch (error) {
+    console.error("MongoDB connection failed:", error);
+    logger.error("Not able to connect to DB.", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    process.exit(1);
   }
 }
 
