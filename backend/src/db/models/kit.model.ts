@@ -22,6 +22,8 @@ const questionSchema = new Schema(
     origin: { type: String, enum: ["generated", "manual"], default: "generated" },
     edited: { type: Boolean, default: false },
     pinned: { type: Boolean, default: false },
+    confidence: { type: Number, min: 1, max: 5, default: null },
+    lastPracticedAt: { type: Date, default: null },
   },
   { _id: false },
 );

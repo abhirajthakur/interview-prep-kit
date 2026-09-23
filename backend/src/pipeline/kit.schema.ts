@@ -39,6 +39,8 @@ export const flashcardSchema = z.object({
   back: z.string().min(1),
   requirement_ids: z.array(z.string()),
   ...itemState,
+  confidence: z.number().int().min(1).max(5).nullable().optional(),
+  lastPracticedAt: z.unknown().nullable().optional(),
 });
 
 export const scheduleDaySchema = z.object({

@@ -13,8 +13,9 @@ import {
   type QuestionCategory,
 } from "./question-generator.js";
 
-const nextIdAfter = (ids: readonly string[]): number =>
+export const nextIdAfter = (ids: readonly string[]): number =>
   1 + Math.max(0, ...ids.map((id) => Number(id.replace(/\D/g, "")) || 0));
+
 const sameIds = (a: readonly string[], b: readonly string[]): boolean =>
   a.length === b.length && a.every((id, i) => id === b[i]);
 

@@ -25,6 +25,8 @@ export type Flashcard = {
   origin?: "generated" | "manual";
   edited?: boolean;
   pinned?: boolean;
+  confidence?: number | null;
+  lastPracticedAt?: string | null;
 };
 
 export type ScheduleDay = { day: number; focus: string; question_ids: string[]; minutes: number };
