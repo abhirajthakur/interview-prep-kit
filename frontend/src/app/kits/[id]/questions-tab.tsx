@@ -153,7 +153,7 @@ export function QuestionsTab({ kit, setKit }: { kit: Kit; setKit: (k: Kit) => vo
 
                       <button
                         onClick={() => void deleteQuestion(q.id)}
-                        className="ml-2 text-red-500 hover:text-red-700"
+                        className="ml-2 cursor-pointer text-red-500 hover:text-red-700"
                       >
                         Delete
                       </button>

@@ -71,7 +71,7 @@ export function FlashcardsTab({ kit, setKit }: { kit: Kit; setKit: (k: Kit) => v
               )}
               <button
                 onClick={() => void del(f.id)}
-                className="ml-auto text-red-500 hover:text-red-700"
+                className="ml-auto cursor-pointer text-red-500 hover:text-red-700"
               >
                 Delete
               </button>

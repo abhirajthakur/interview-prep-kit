@@ -1,43 +1,84 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
-function useDebouncedSave(value: string, onSave: (v: string) => void, delayMs: number) {
-  const savedValue = useRef(value);
+type FieldProps = {
+  initial: string;
+  onSave: (v: string) => Promise<void> | void;
+  className?: string;
+};
 
-  useEffect(() => {
-    if (value === savedValue.current) return;
+function useDraft(initial: string) {
+  const [value, setValue] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  const dirty = value !== initial;
 
-    const timer = setTimeout(() => {
-      savedValue.current = value;
-      onSave(value);
-    }, delayMs);
+  const save = async (onSave: (v: string) => Promise<void> | void): Promise<void> => {
+    if (!dirty) return;
+    setSaving(true);
+    try {
+      await onSave(value);
+    } finally {
+      setSaving(false);
+    }
+  };
+  const cancel = (): void => setValue(initial);
 
-    return () => clearTimeout(timer);
-  }, [value, onSave, delayMs]);
+  return { value, setValue, dirty, saving, save, cancel };
 }
 
-export function EditableText({
-  initial,
+function SaveCancelRow({
+  dirty,
+  saving,
   onSave,
-  className,
+  onCancel,
 }: {
-  initial: string;
-  onSave: (v: string) => void;
-  className?: string;
+  dirty: boolean;
+  saving: boolean;
+  onSave: () => void;
+  onCancel: () => void;
 }) {
-  const [value, setValue] = useState(initial);
-
-  useDebouncedSave(value, onSave, 600);
-
+  if (!dirty) return null;
   return (
-    <input
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      className={
-        className ?? "w-full rounded border border-neutral-300 px-2 py-1 text-sm text-neutral-900"
-      }
-    />
+    <div className="mt-1 flex gap-2">
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={saving}
+        className="cursor-pointer rounded bg-neutral-900 px-2 py-0.5 text-xs text-white hover:bg-neutral-700 disabled:cursor-default disabled:opacity-50"
+      >
+        {saving ? "Saving…" : "Save"}
+      </button>
+      <button
+        type="button"
+        onClick={onCancel}
+        disabled={saving}
+        className="cursor-pointer text-xs text-neutral-500 hover:text-neutral-800 disabled:cursor-default disabled:opacity-50"
+      >
+        Cancel
+      </button>
+    </div>
+  );
+}
+
+export function EditableText({ initial, onSave, className }: FieldProps) {
+  const { value, setValue, dirty, saving, save, cancel } = useDraft(initial);
+  return (
+    <div>
+      <input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className={
+          className ?? "w-full rounded border border-neutral-300 px-2 py-1 text-sm text-neutral-900"
+        }
+      />
+      <SaveCancelRow
+        dirty={dirty}
+        saving={saving}
+        onSave={() => void save(onSave)}
+        onCancel={cancel}
+      />
+    </div>
   );
 }
 
@@ -46,24 +87,24 @@ export function EditableTextarea({
   onSave,
   rows = 3,
   className,
-}: {
-  initial: string;
-  onSave: (v: string) => void;
-  rows?: number;
-  className?: string;
-}) {
-  const [value, setValue] = useState(initial);
-
-  useDebouncedSave(value, onSave, 600);
-
+}: FieldProps & { rows?: number }) {
+  const { value, setValue, dirty, saving, save, cancel } = useDraft(initial);
   return (
-    <textarea
-      value={value}
-      rows={rows}
-      onChange={(e) => setValue(e.target.value)}
-      className={
-        className ?? "w-full rounded border border-neutral-300 px-2 py-1 text-sm text-neutral-900"
-      }
-    />
+    <div>
+      <textarea
+        value={value}
+        rows={rows}
+        onChange={(e) => setValue(e.target.value)}
+        className={
+          className ?? "w-full rounded border border-neutral-300 px-2 py-1 text-sm text-neutral-900"
+        }
+      />
+      <SaveCancelRow
+        dirty={dirty}
+        saving={saving}
+        onSave={() => void save(onSave)}
+        onCancel={cancel}
+      />
+    </div>
   );
 }
